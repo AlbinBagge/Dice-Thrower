@@ -16,11 +16,6 @@ public class Game
 
         _opponents = new List<Opponent>();
         _opponents.Add(new Opponent());
-        _opponents.Add(new Opponent());
-        _opponents.Add(new Opponent());
-        _opponents.Add(new Opponent());
-        _opponents.Add(new Opponent());
-        _opponents.Add(new Opponent());
     }
 
     public void StartMenu()
@@ -44,7 +39,7 @@ public class Game
                 "4. -\n" +
                 "5. Choose players\n" +
                 "6. Choose AI opponents\n" +
-                "7. Quit");
+                "7. Quit\n");
 
             switch (Console.ReadKey(true).Key)
             {
@@ -70,12 +65,10 @@ public class Game
 
                 case ConsoleKey.D5:
                     ChoosePlayers();
-                    WaitForKeyPress();
                     break;
 
                 case ConsoleKey.D6:
                     ChooseOpponents();
-                    WaitForKeyPress();
                     break;
 
                 case ConsoleKey.D7:
@@ -88,7 +81,7 @@ public class Game
 
     private void WaitForKeyPress()
     {
-        Console.WriteLine("Press any key.");
+        Console.Write("Press any key: ");
         Console.ReadKey();
     }
 
@@ -109,7 +102,7 @@ public class Game
         }
     }
 
-    // Empty the list of players & add new players
+    // Empty the list of Players & add new Players
     private void ChoosePlayers()
     {
         string playerName;
@@ -118,17 +111,17 @@ public class Game
         int leftOverOpponents;
         int exceedingOpponents;
 
-        // Input new number of players
+        // Input new number of Players
         do
         {
             numberOfPlayers = InputNumber($"Input number of players (1-{_maxActors}): ");
         }
         while (numberOfPlayers < 1 || numberOfPlayers > _maxActors);
 
-        // Empty the list of players
+        // Empty the list of Players
         _players.Clear();
 
-        // Add new players to the list
+        // Add new Players to the list
         for (int i = 0; i < numberOfPlayers; i++)
         {
             playerName = InputName($"Enter a unique name for Player {i + 1}: ");
@@ -149,10 +142,44 @@ public class Game
         }
     }
 
-    // Empty the list of opponents & add new opponents
+    // Empty the list of Opponents & add new Opponents
     private void ChooseOpponents()
     {
-        Console.WriteLine("Debug: ChooseOpponents");
+        int numberOfPlayers = _players.Count();
+        int numberOfOpponents;
+        int minOpponents = 0;
+        int maxOpponents = _maxActors - numberOfPlayers;
+
+        // Check if Opponents can be added
+        if (maxOpponents == 0)
+        {
+            Console.WriteLine("Max number of players reached. Remove players to add AI opponents.");
+            WaitForKeyPress();
+            return;
+        }
+
+        // Ensure that a single Player has an Opponent
+        if (numberOfPlayers == 1)
+        {
+            minOpponents = 1;
+        }
+
+        // Input new number of Opponents
+        do
+        {
+            numberOfOpponents = InputNumber(
+                $"Input number of opponents ({minOpponents}-{maxOpponents}): ");
+        }
+        while (numberOfOpponents < minOpponents || numberOfOpponents > maxOpponents);
+
+        // Empty the list of Opponents
+        _opponents.Clear();
+
+        // Add new Opponents to the list
+        for (int i = 0; i < numberOfOpponents; i++)
+        {
+            _opponents.Add(new Opponent());
+        }
     }
 
     // Ask the user for a number
