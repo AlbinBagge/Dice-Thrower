@@ -3,7 +3,7 @@ namespace DT_Console;
 
 public abstract class Actor
 {
-    public string Name;
+    public string Name { get; set; }
 
     public Actor()
     {

@@ -5,7 +5,7 @@ public class Opponent : Actor
 {
     public Opponent()
     {
-        Name = "Placeholder, add name choosing method";
+        Name = "Placeholder name";
         Console.WriteLine($"Debug: Opponent \"{Name}\"");
     }
 

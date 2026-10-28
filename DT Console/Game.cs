@@ -13,11 +13,9 @@ public class Game
 
         _opponents = new List<Opponent>();
         _opponents.Add(new Opponent());
-
-        Menu();
     }
 
-    private void Menu()
+    public void StartMenu()
     {
         bool menuActive = true;
 
@@ -25,8 +23,8 @@ public class Game
         Console.WriteLine();
 
         PrintActors();
-
         Console.WriteLine();
+
         Console.WriteLine(
             "Choose an option by pressing a number key:\n" +
             "1. Play Farkle\n" +
@@ -86,8 +84,8 @@ public class Game
         {
             Console.WriteLine($"- {player.Name}");
         }
-
         Console.WriteLine();
+
         Console.WriteLine("Current AI opponents:");
         foreach (Opponent opponent in _opponents)
         {
