@@ -56,20 +56,14 @@ public class Game
                     break;
 
                 case ConsoleKey.D5:
-                    Console.WriteLine("Debug: case 5 Choose players");
-                    
-                    // Todo: add players feature zzz
+                    ChoosePlayers();
                     break;
 
                 case ConsoleKey.D6:
-                    Console.WriteLine("Debug: case 6 Choose AI opponents");
-                    
-                    // Todo: add opponents feature
+                    ChooseOpponents();
                     break;
 
                 case ConsoleKey.D7:
-                    Console.WriteLine("Debug: case 7 Quit");
-
                     menuActive = false;
                     break;
             }
@@ -91,5 +85,15 @@ public class Game
         {
             Console.WriteLine($"- {opponent.Name}");
         }
+    }
+
+    private void ChoosePlayers()
+    {
+        Console.WriteLine("Debug: ChoosePlayers");
+    }
+
+    private void ChooseOpponents()
+    {
+        Console.WriteLine("Debug: ChooseOpponents");
     }
 }
