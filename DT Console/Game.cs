@@ -16,6 +16,11 @@ public class Game
 
         _opponents = new List<Opponent>();
         _opponents.Add(new Opponent());
+        _opponents.Add(new Opponent());
+        _opponents.Add(new Opponent());
+        _opponents.Add(new Opponent());
+        _opponents.Add(new Opponent());
+        _opponents.Add(new Opponent());
     }
 
     public void StartMenu()
@@ -107,10 +112,13 @@ public class Game
     // Empty the list of players & add new players
     private void ChoosePlayers()
     {
-        int numberOfPlayers;
         string playerName;
+        int numberOfPlayers;
+        int numberOfOpponents = _opponents.Count();
+        int leftOverOpponents;
+        int exceedingOpponents;
 
-        // Input number of players
+        // Input new number of players
         do
         {
             numberOfPlayers = InputNumber($"Input number of players (1-{_maxActors}): ");
@@ -125,6 +133,19 @@ public class Game
         {
             playerName = InputName($"Enter a unique name for Player {i + 1}: ");
             _players.Add(new Player(playerName));
+        }
+
+        // Remove any Opponents that exceed the maximum number of Actors
+        if ((numberOfPlayers + numberOfOpponents) > _maxActors)
+        {
+            leftOverOpponents = _maxActors - numberOfPlayers;
+            exceedingOpponents = numberOfPlayers + numberOfOpponents - _maxActors;
+            _opponents.RemoveRange(leftOverOpponents, exceedingOpponents);
+        }
+        // Ensure that a single Player has an Opponent
+        else if (numberOfPlayers == 1 && numberOfOpponents == 0)
+        {
+            _opponents.Add(new Opponent());
         }
     }
 
