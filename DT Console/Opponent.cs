@@ -3,10 +3,19 @@ namespace DT_Console;
 
 public class Opponent : Actor
 {
-    public Opponent()
+    public Opponent(int index)
     {
-        Name = "Placeholder name";
+        Name = PickName(index);
     }
 
-    // Todo: name choosing method
+    // Pick a name using an index 0-10
+    private string PickName(int index)
+    {
+        List<string> names = [ 
+            "Alfred", "Berta", "Charlie", "David", "Elias", 
+            "Faith", "Goro", "Helena", "Isaac", "Juliette", 
+            "Henry of Skalitz" ];
+
+        return names[index];
+    }
 }

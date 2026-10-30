@@ -15,7 +15,7 @@ public class Game
         _players.Add(new Player("Player 1"));
 
         _opponents = new List<Opponent>();
-        _opponents.Add(new Opponent());
+        _opponents.Add(new Opponent(0));
     }
 
     public void StartMenu()
@@ -25,12 +25,16 @@ public class Game
         do
         {
             Console.Clear();
+
+            // Title
             Console.WriteLine("> Dice Thrower");
             Console.WriteLine();
 
+            // List of Players & Opponents
             PrintActors();
             Console.WriteLine();
 
+            // Options
             Console.WriteLine(
                 "Choose an option by pressing a number key:\n" +
                 "1. Play Farkle\n" +
@@ -46,21 +50,29 @@ public class Game
                 case ConsoleKey.D1:
                     Console.WriteLine("Debug: case 1 Farkle");
                     WaitForKeyPress();
+                    // Todo: Farkle.cs
+
                     break;
 
                 case ConsoleKey.D2:
                     Console.WriteLine("Debug: case 2 Put & Take");
                     WaitForKeyPress();
+                    // Todo: PutAndtake.cs
+
                     break;
 
                 case ConsoleKey.D3:
                     Console.WriteLine("Debug: case 3 -");
                     WaitForKeyPress();
+                    // Todo (bonus): FiveNine.cs
+
                     break;
 
                 case ConsoleKey.D4:
                     Console.WriteLine("Debug: case 4 -");
                     WaitForKeyPress();
+                    // Todo (bonus): Beetle.cs
+
                     break;
 
                 case ConsoleKey.D5:
@@ -138,7 +150,7 @@ public class Game
         // Ensure that a single Player has an Opponent
         else if (numberOfPlayers == 1 && numberOfOpponents == 0)
         {
-            _opponents.Add(new Opponent());
+            _opponents.Add(new Opponent(10));
         }
     }
 
@@ -178,7 +190,7 @@ public class Game
         // Add new Opponents to the list
         for (int i = 0; i < numberOfOpponents; i++)
         {
-            _opponents.Add(new Opponent());
+            _opponents.Add(new Opponent(i));
         }
     }
 
