@@ -8,5 +8,6 @@ public abstract class Actor
     public Actor()
     {
         Name = string.Empty;
+        Console.WriteLine("Debug: Actor");
     }
 }
