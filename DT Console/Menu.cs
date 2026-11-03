@@ -1,13 +1,13 @@
 ﻿// Albin Bagge
 namespace DT_Console;
 
-public class Game
+public class Menu
 {
     private int _maxActors;
     private List<Player> _players;
     private List<Opponent> _opponents;
 
-    public Game()
+    public Menu() // Todo: Change all public to internal?
     {
         _maxActors = 10;
 
@@ -18,59 +18,38 @@ public class Game
         _opponents.Add(new Opponent(0));
     }
 
-    public void StartMenu()
+    public void Start()
     {
         bool menuActive = true;
 
         do
         {
-            Console.Clear();
-
-            // Title
-            Console.WriteLine("> Dice Thrower");
-            Console.WriteLine();
-
-            // List of Players & Opponents
-            PrintActors();
-            Console.WriteLine();
-
-            // Options
-            Console.WriteLine(
-                "Choose an option by pressing a number key:\n" +
-                "1. Play Farkle\n" +
-                "2. Play Put & Take\n" +
-                "3. -\n" +
-                "4. -\n" +
-                "5. Choose players\n" +
-                "6. Choose AI opponents\n" +
-                "7. Quit\n");
+            PrintMenu();
 
             switch (Console.ReadKey(true).Key)
             {
                 case ConsoleKey.D1:
-                    Console.WriteLine("Debug: case 1 Farkle");
-                    WaitForKeyPress();
-                    // Todo: Farkle.cs
-
+                    Farkle farkle = new(_players, _opponents);
+                    farkle.Start();
                     break;
 
                 case ConsoleKey.D2:
                     Console.WriteLine("Debug: case 2 Put & Take");
-                    WaitForKeyPress();
+                    Utilities.WaitForKeyPress(); // Debug
                     // Todo: PutAndtake.cs
 
                     break;
 
                 case ConsoleKey.D3:
                     Console.WriteLine("Debug: case 3 -");
-                    WaitForKeyPress();
+                    Utilities.WaitForKeyPress(); // Debug
                     // Todo (bonus): FiveNine.cs
 
                     break;
 
                 case ConsoleKey.D4:
                     Console.WriteLine("Debug: case 4 -");
-                    WaitForKeyPress();
+                    Utilities.WaitForKeyPress(); // Debug
                     // Todo (bonus): Beetle.cs
 
                     break;
@@ -91,27 +70,29 @@ public class Game
         while (menuActive);
     }
 
-    private void WaitForKeyPress()
+    // Print the main menu
+    private void PrintMenu()
     {
-        Console.Write("Press any key: ");
-        Console.ReadKey();
-    }
+        Console.Clear();
 
-    // Print current players & opponents
-    private void PrintActors()
-    {
-        Console.WriteLine("Current players:");
-        foreach (Player player in _players)
-        {
-            Console.WriteLine($"- {player.Name}");
-        }
+        // Title
+        Console.WriteLine("> Dice Thrower");
         Console.WriteLine();
 
-        Console.WriteLine("Current AI opponents:");
-        foreach (Opponent opponent in _opponents)
-        {
-            Console.WriteLine($"- {opponent.Name}");
-        }
+        // List of Players & Opponents
+        Utilities.PrintActors(_players, _opponents);
+        Console.WriteLine();
+
+        // Options
+        Console.WriteLine(
+            "Choose an option by pressing a number key:\n" +
+            "1. Play Farkle\n" +
+            "2. Play Put & Take\n" +
+            "3. -\n" +
+            "4. -\n" +
+            "5. Choose players\n" +
+            "6. Choose AI opponents\n" +
+            "7. Quit\n");
     }
 
     // Empty the list of Players & add new Players
@@ -166,7 +147,7 @@ public class Game
         if (maxOpponents == 0)
         {
             Console.WriteLine("Max number of players reached. Remove players to add AI opponents.");
-            WaitForKeyPress();
+            Utilities.WaitForKeyPress();
             return;
         }
 

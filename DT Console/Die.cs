@@ -1,21 +1,17 @@
 ﻿namespace DT_Console;
 
-public class Dice
+public class Die
 {
     public int Value { get; private set; }
 
-    private string _ownerName;
-
-    public Dice(string ownerName)
+    public Die()
     {
-        _ownerName = ownerName;
     }
 
     // Roll the dice, then print & return its value
-    public int RollDice()
+    public int Roll()
     {
         Value = Random.Shared.Next(1, 7);
-        Console.WriteLine($"{_ownerName} rolled a {Value}.");
 
         return Value;
     }

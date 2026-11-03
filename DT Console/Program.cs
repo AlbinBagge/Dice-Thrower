@@ -5,7 +5,7 @@ internal class Program
 {
     static void Main(string[] args)
     {
-        Game game = new();
-        game.StartMenu();
+        Menu menu = new();
+        menu.Start();
     }
 }
