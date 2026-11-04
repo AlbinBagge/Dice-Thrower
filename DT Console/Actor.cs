@@ -1,13 +1,12 @@
 ﻿// Albin Bagge
 namespace DT_Console;
 
-public abstract class Actor
+internal abstract class Actor
 {
-    public string Name { get; set; }
-    public int GameScore { get; set; }
+    internal string Name { get; set; } = string.Empty;
+    internal int Score { get; set; } = 0;
 
-    public Actor()
+    internal Actor()
     {
-        Name = string.Empty;
     }
 }

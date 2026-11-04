@@ -1,21 +1,21 @@
 ﻿// Albin Bagge
 namespace DT_Console;
 
-public static class Utilities
+internal static class Utilities
 {
-    static Utilities() // Todo: No constructor needed?
+    static Utilities() // Todo: no constructor needed?
     {
     }
 
     // Pause & prompt the user to press a key
-    public static void WaitForKeyPress()
+    internal static void WaitForKeyPress()
     {
         Console.Write("Press any key");
         Console.ReadKey();
     }
 
     // Print current players & opponents
-    public static void PrintActors(List<Player> players, List<Opponent> opponents)
+    internal static void PrintActors(List<Player> players, List<Opponent> opponents)
     {
         Console.WriteLine("Current players:");
         foreach (Player player in players)
@@ -23,7 +23,6 @@ public static class Utilities
             Console.WriteLine($"- {player.Name}");
         }
         Console.WriteLine();
-
         Console.WriteLine("Current AI opponents:");
         foreach (Opponent opponent in opponents)
         {

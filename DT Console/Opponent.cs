@@ -1,9 +1,9 @@
 ﻿// Albin Bagge
 namespace DT_Console;
 
-public class Opponent : Actor
+internal class Opponent : Actor
 {
-    public Opponent(int index)
+    internal Opponent(int index)
     {
         Name = PickName(index);
     }

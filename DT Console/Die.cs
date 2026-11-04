@@ -1,15 +1,16 @@
-﻿namespace DT_Console;
+﻿// Albin Bagge
+namespace DT_Console;
 
-public class Die
+internal class Die
 {
-    public int Value { get; private set; }
+    internal int Value { get; private set; }
 
-    public Die()
+    internal Die()
     {
     }
 
-    // Roll the dice, then print & return its value
-    public int Roll()
+    // Roll the die & return its value (1-6)
+    internal int Roll()
     {
         Value = Random.Shared.Next(1, 7);
 

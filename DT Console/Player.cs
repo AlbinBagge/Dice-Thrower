@@ -1,9 +1,9 @@
 ﻿// Albin Bagge
 namespace DT_Console;
 
-public class Player : Actor
+internal class Player : Actor
 {
-    public Player(string name)
+    internal Player(string name)
     {
         Name = name;
     }

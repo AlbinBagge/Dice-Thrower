@@ -1,111 +1,176 @@
 ﻿// Albin Bagge
-using System.Net;
+using System.Collections;
 
 namespace DT_Console;
 
-public class Farkle
+internal class Farkle
 {
-    private bool _gameModeActive;
-    private List<Player> _players;
-    private List<Opponent> _opponents;
+    private readonly List<Player> _players;
+    private readonly List<Opponent> _opponents;
+    private readonly List<Actor> _actors = new();
+    private const int WinScore = 1000; // Todo: change to 4000 in finished version
 
-    public Farkle(List<Player> players, List<Opponent> opponents)
+    internal Farkle(List<Player> players, List<Opponent> opponents)
     {
-        _gameModeActive = true;
         _players = players;
         _opponents = opponents;
+
+        // Add players & opponents to one actor list
+        _actors.AddRange(players);
+        _actors.AddRange(opponents);
     }
 
-    public void Start()
+    internal void StartGame()
     {
+        bool gameIsActive = true;
+
+        PrintStartScreen();
+
+        // Game loop
         do
         {
-            // Debug: Could also StartRound(_players) then StartRound(_opponents)
-            StartRound();
-            _gameModeActive = false; // Debug
-            Utilities.WaitForKeyPress(); // Debug
-        }
-        while (_gameModeActive);
-    }
+            // Round
+            foreach (Actor actor in _actors)
+            {
+                StartTurn(actor);
+            }
 
-    private void StartRound()
-    {
-        // Add Players & Opponents to one Actor list
-        List<Actor> actors = new();
-        actors.AddRange(_players);
-        actors.AddRange(_opponents);
+            // Win condition
+            if (_actors.Any(a => a.Score >= WinScore))
+            {
+                // Print winner
+                Actor? winner = _actors.MaxBy(actor => actor.Score);
+                if (winner != null)
+                {
+                    Console.WriteLine($"The winner is {winner.Name} with {winner.Score} score!");
+                    Utilities.WaitForKeyPress();
+                }
 
-        foreach (Actor actor in actors)
-        {
-            StartTurn(actor);
+                // Reset scores
+                foreach (Actor actor in _actors)
+                {
+                    actor.Score = 0;
+                }
+
+                // Game over
+                gameIsActive = false;
+            }
         }
+        while (gameIsActive);
     }
 
     private void StartTurn(Actor actor)
     {
-        bool turnActive = true;
-        List<Die> remainingDice = new();
-        List<Die> setAsideDice = new();
+        // Handle information needed for the turn
+        FarkleTurnState turn = new(actor);
 
-        // Add 6 new dice
-        for (int i = 0; i < 6; i++)
-        {
-            remainingDice.Add(new Die());
-        }
-
-        // Loop turn
+        // Turn loop
         do
         {
             // Throw remaining dice
-            foreach (Die die in remainingDice)
+            foreach (Die die in turn.RemainingDice)
             {
                 die.Roll();
             }
 
-            // Sort dice by value
-            remainingDice = remainingDice.OrderBy(d => d.Value).ToList();
+            // Sort dice by value for better presentation
+            turn.RemainingDice.Sort((first, second) => first.Value.CompareTo(second.Value));
 
             // Print dice
-            Console.Write($"{actor.Name} rolled:");
-            foreach (Die die in remainingDice)
+            Console.Write($"{turn.Actor.Name} rolled:   ");
+            foreach (Die die in turn.RemainingDice)
             {
                 Console.Write($" {die.Value}");
             }
             Console.WriteLine();
 
-            // If scoring combinations
-            if (CheckIfScore(remainingDice))
+            // Check if the turn should continue
+            if (CheckIfScore(turn.RemainingDice))
             {
                 Console.WriteLine(
                     $"1. Set aside\n" +
                     $"2. Stand");
 
+                // Choose: set aside / stand
                 switch (Console.ReadKey(true).Key)
                 {
                     case ConsoleKey.D1:
-                        Console.WriteLine("Debug: Set aside");
-                        break;
+                        {
+                            Console.WriteLine("Debug: Set aside");
+
+                            // Todo:
+                            // Input string of dice values to set aside
+                                // Convert string into a list of single-digit integers
+                                // Check that the dice-list contains all values in the int-list
+                                    // Add & remove dice corresponding to the int-list...
+                                    // ...from remainingDice to setAsideDice
+                                    // (foreach (nr in int-list) -> remove dice where value == nr)
+
+                                    // Get score from setAsideDice and add to turn score
+                                    // Empty list of set aside dice
+
+                            break;
+                        }
 
                     case ConsoleKey.D2:
-                        actor.GameScore = GetScore(remainingDice); // Debug
-                        Console.WriteLine($"Debug - {actor.Name} game score: {actor.GameScore}");
+                        // Add final turn score to actor's core
+                        turn.Score += GetScore(turn.RemainingDice);
+                        turn.Actor.Score += turn.Score;
+
+                        // Print scores
+                        Console.WriteLine($"{turn.Actor.Name} stands. " +
+                            $"Turn score: {turn.Score}, Total score: {turn.Actor.Score}");
+
+                        // End the turn
+                        turn.IsActive = false;
+
                         break;
                 }
                 Console.WriteLine();
 
-                // Set aside or stand
-                // If all dice scored: ask to keep playing
+                // Check if all dice scored
+                if (turn.RemainingDice.Count() == 0)
+                {
+                    Console.WriteLine($"All of {turn.Actor}'s dice scored! " +
+                        $"Do they wish to keep playing their turn with new dice?\n" +
+                        $"1. Yes\n" +
+                        $"2. No");
+
+                    // Choose: add dice / end turn
+                    switch (Console.ReadKey(true).Key)
+                    {
+                        case ConsoleKey.D1:
+                            turn.AddDice();
+                            break;
+
+                        case ConsoleKey.D2:
+                            turn.IsActive = false;
+                            break;
+                    }
+                }
             }
             else
             {
-                turnActive = false;
-                Console.WriteLine($"Debug: {actor.Name} farkled! (No scoring dice.)");
+                // Farkle (bust)
+                turn.IsActive = false;
+                Console.WriteLine($"{turn.Actor.Name} farkled! (No scoring dice.)");
                 Console.WriteLine();
             }
-
-            turnActive = false; // Debug
         }
-        while (turnActive);
+        while (turn.IsActive);
+    }
+
+    private void PrintStartScreen()
+    {
+        Console.Clear();
+
+        // Title
+        Console.WriteLine("> Dice Thrower > Farkle");
+        Console.WriteLine();
+
+        // List of Players & Opponents
+        Utilities.PrintActors(_players, _opponents);
+        Console.WriteLine();
     }
 
     // Checks if the given dice have a scoring combination
