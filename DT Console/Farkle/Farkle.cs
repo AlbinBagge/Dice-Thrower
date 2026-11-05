@@ -1,6 +1,4 @@
 ﻿// Albin Bagge
-using System.Collections;
-
 namespace DT_Console;
 
 internal class Farkle
@@ -8,7 +6,7 @@ internal class Farkle
     private readonly List<Player> _players;
     private readonly List<Opponent> _opponents;
     private readonly List<Actor> _actors = new();
-    private const int WinScore = 1000; // Todo: change to 4000 in finished version
+    private const int WinScore = 4000;
 
     internal Farkle(List<Player> players, List<Opponent> opponents)
     {
@@ -85,13 +83,16 @@ internal class Farkle
             {
                 Console.WriteLine(
                     $"1. Set aside\n" +
-                    $"2. Stand");
+                    $"2. Stand\n");
 
-                // Choose: set aside / stand
-                switch (Console.ReadKey(true).Key)
+                bool menuIsActive = true;
+                do
                 {
-                    case ConsoleKey.D1:
-                        {
+                    // Choose: set aside / stand
+                    switch (Console.ReadKey(true).Key)
+                    {
+                        // Set aside
+                        case ConsoleKey.D1:
                             Console.WriteLine(
                                 "Input dice values to set aside (with or without spaces):");
 
@@ -145,6 +146,9 @@ internal class Farkle
                                     continue;
                                 }
 
+                                // Empty line after successfull input
+                                Console.WriteLine();
+
                                 // Add score from dice selected to be set aside
                                 turn.Score += turn.TempScore;
 
@@ -163,11 +167,6 @@ internal class Farkle
                             }
                             while (isSettingAside);
 
-                            // Tip for adding and removing SELECTED DICE LIST:
-
-                            // foreach (Die die in SELECTED DICE LIST):
-                            // remove first HAND LIST die where value == SELECTED LIST dice value)
-
                             // Todo:
 
                             // Check that input dice are valid:
@@ -184,25 +183,28 @@ internal class Farkle
                             // X Check that REMAINING DICE LIST is empty
                             // X Add TEMP SCORE to SCORE
                             // X Remove SELECTED DICE LIST from HAND DICE LIST
-
+                            menuIsActive = false;
                             break;
-                        }
 
-                    case ConsoleKey.D2:
-                        // Add final turn score to actor's core
-                        turn.Score += GetScore(turn.HandDice, turn);
-                        turn.Actor.Score += turn.Score;
+                        // Stand
+                        case ConsoleKey.D2:
+                            // Add final turn score to actor's core
+                            turn.Score += GetScore(turn.HandDice, turn);
+                            turn.Actor.Score += turn.Score;
 
-                        // Print scores
-                        Console.WriteLine($"{turn.Actor.Name} stands. " +
-                            $"Turn score: {turn.Score}, Total score: {turn.Actor.Score}");
+                            // Print scores
+                            Console.WriteLine($"{turn.Actor.Name} stands. " +
+                                $"Turn score: {turn.Score}, Total score: {turn.Actor.Score}");
+                            Console.WriteLine();
 
-                        // End the turn
-                        turn.IsActive = false;
-
-                        break;
+                            // End the turn
+                            turn.IsActive = false;
+                            menuIsActive = false;
+                            break;
+                    }
                 }
-                Console.WriteLine();
+                while (menuIsActive);
+
 
                 // Check if all dice scored
                 if (turn.HandDice.Count() == 0)
@@ -210,19 +212,26 @@ internal class Farkle
                     Console.WriteLine($"All of {turn.Actor}'s dice scored! " +
                         $"Do they wish to keep playing their turn with new dice?\n" +
                         $"1. Yes\n" +
-                        $"2. No");
+                        $"2. No\n");
 
-                    // Choose: add dice / end turn
-                    switch (Console.ReadKey(true).Key)
+                    menuIsActive = true;
+                    do
                     {
-                        case ConsoleKey.D1:
-                            turn.AddDice();
-                            break;
+                        // Choose: add dice / end turn
+                        switch (Console.ReadKey(true).Key)
+                        {
+                            case ConsoleKey.D1:
+                                turn.AddDice();
+                                menuIsActive = false;
+                                break;
 
-                        case ConsoleKey.D2:
-                            turn.IsActive = false;
-                            break;
+                            case ConsoleKey.D2:
+                                turn.IsActive = false;
+                                menuIsActive = false;
+                                break;
+                        }
                     }
+                    while (menuIsActive);
                 }
             }
             else
@@ -340,14 +349,15 @@ internal class Farkle
                     {
                         int tripleOnesCount = matchingDiceCount / 3;
                         int remainingOnes = matchingDiceCount % 3;
+                        int scoringOnes = matchingDiceCount - remainingOnes;
                         int comboScore = tripleOnesCount * 1000;
 
                         score += comboScore;
 
-                        Console.WriteLine($"{tripleOnesCount}*{dieValue}: {comboScore} score");
+                        Console.WriteLine($"{scoringOnes}*{dieValue}: {comboScore} score");
 
                         // Consume scoring dice
-                        for (int i = 0; i < (matchingDiceCount - remainingOnes); i++)
+                        for (int i = 0; i < scoringOnes; i++)
                         {
                             int dieIndex = 
                                 turn.RemainingDice.FindIndex(die => die.Value == dieValue);
@@ -432,7 +442,12 @@ internal class Farkle
     {
         foreach (Die die in dice)
         {
-            Console.Write($"{die.Value} ");
+            // Add color
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.BackgroundColor = ConsoleColor.Yellow;
+            Console.Write($" {die.Value} ");
+            Console.ResetColor();
+            Console.Write(" ");
         }
         Console.WriteLine();
     }

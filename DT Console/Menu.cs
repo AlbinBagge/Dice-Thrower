@@ -9,7 +9,6 @@ internal class Menu
 
     internal Menu()
     {
-        // Add an initial player & AI-opponent
         _players.Add(new Player("Player 1"));
         _opponents.Add(new Opponent(0));
     }
@@ -32,32 +31,14 @@ internal class Menu
                     break;
 
                 case ConsoleKey.D2:
-                    Console.WriteLine("Debug: case 2 Put & Take");
-                    Utilities.WaitForKeyPress(); // Debug
-                    // Todo: PutAndtake.cs
-                    break;
-
-                case ConsoleKey.D3:
-                    Console.WriteLine("Debug: case 3 -");
-                    Utilities.WaitForKeyPress(); // Debug
-                    // Todo (bonus): FiveNine.cs
-                    break;
-
-                case ConsoleKey.D4:
-                    Console.WriteLine("Debug: case 4 -");
-                    Utilities.WaitForKeyPress(); // Debug
-                    // Todo (bonus): Beetle.cs
-                    break;
-
-                case ConsoleKey.D5:
                     ChoosePlayers();
                     break;
 
-                case ConsoleKey.D6:
+                case ConsoleKey.D3:
                     ChooseOpponents();
                     break;
 
-                case ConsoleKey.D7:
+                case ConsoleKey.D4:
                     menuIsActive = false; // Quit
                     break;
             }
@@ -82,12 +63,12 @@ internal class Menu
         Console.WriteLine(
             "Choose an option by pressing a number key:\n" +
             "1. Play Farkle\n" +
-            "2. Play Put & Take\n" +
-            "3. -\n" +
-            "4. -\n" +
-            "5. Choose players\n" +
-            "6. Choose AI opponents\n" +
-            "7. Quit\n");
+            //"2. Play Put & Take\n" +
+            //"3. Play Nine-Five\n" +
+            //"4. Play Beetle\n" +
+            "2. Choose players\n" +
+            "3. Choose AI opponents\n" +
+            "4. Quit\n");
     }
 
     // Empty the list of players & add new players
