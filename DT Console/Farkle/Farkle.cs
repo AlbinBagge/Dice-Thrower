@@ -67,25 +67,21 @@ internal class Farkle
         // Turn loop
         do
         {
-            // Throw remaining dice
-            foreach (Die die in turn.RemainingDice)
+            // Throw current hand of dice
+            foreach (Die die in turn.HandDice)
             {
                 die.Roll();
             }
 
             // Sort dice by value for better presentation
-            turn.RemainingDice.Sort((first, second) => first.Value.CompareTo(second.Value));
+            turn.HandDice.Sort((first, second) => first.Value.CompareTo(second.Value));
 
-            // Print dice
-            Console.Write($"{turn.Actor.Name} rolled:   ");
-            foreach (Die die in turn.RemainingDice)
-            {
-                Console.Write($" {die.Value}");
-            }
-            Console.WriteLine();
+            // Print rolled dice
+            Console.Write($"{turn.Actor.Name} rolled: ");
+            PrintDice(turn.HandDice);
 
             // Check if the turn should continue
-            if (CheckIfScore(turn.RemainingDice))
+            if (CheckIfScore(turn.HandDice))
             {
                 Console.WriteLine(
                     $"1. Set aside\n" +
@@ -96,25 +92,105 @@ internal class Farkle
                 {
                     case ConsoleKey.D1:
                         {
-                            Console.WriteLine("Debug: Set aside");
+                            Console.WriteLine(
+                                "Input dice values to set aside (with or without spaces):");
+
+                            bool isSettingAside = true;
+                            do
+                            {
+                                // Reset selected dice & their score
+                                turn.SelectedDice.Clear();
+                                turn.TempScore = 0;
+
+                                // Input string for dice selection
+                                string valuesText;
+                                do
+                                {
+                                    valuesText = Console.ReadLine() ?? string.Empty;
+                                }
+                                while (string.IsNullOrWhiteSpace(valuesText));
+
+                                // Convert digits in the string to a list of integers
+                                List<int> valuesList = valuesText
+                                    .Where(char.IsDigit)
+                                    .Select(character => character - '0')
+                                    .ToList();
+
+                                // Make sure the list of requested values isn't empty
+                                if (valuesList.Count == 0)
+                                {
+                                    continue;
+                                }
+
+                                // Make sure the hand contains all requested values
+                                if (!DiceContainsValues(turn.HandDice, valuesList))
+                                {
+                                    continue;
+                                }
+
+                                // Add requested dice from the hand to selected dice
+                                foreach (int value in valuesList)
+                                {
+                                    int index = turn.HandDice.FindIndex(die => die.Value == value);
+                                    turn.SelectedDice.Add(turn.HandDice[index]);
+                                }
+
+                                // Obtain the score from selected dice
+                                turn.TempScore = GetScore(turn.SelectedDice, turn);
+
+                                // Check if there are non-scoring dice remaining from selected dice
+                                // (Non-scoring dice can not be set aside)
+                                if (turn.RemainingDice.Count() != 0)
+                                {
+                                    continue;
+                                }
+
+                                // Add score from dice selected to be set aside
+                                turn.Score += turn.TempScore;
+
+                                // Set aside selected dice
+                                foreach (Die selectedDie in turn.SelectedDice)
+                                {
+                                    // Find the index of a die with corresponding value
+                                    int index = turn.HandDice.FindIndex(
+                                        handDie => handDie.Value == selectedDie.Value);
+
+                                    // Remove the corresponding die from the hand
+                                    turn.HandDice.RemoveAt(index);
+                                }
+
+                                isSettingAside = false;
+                            }
+                            while (isSettingAside);
+
+                            // Tip for adding and removing SELECTED DICE LIST:
+
+                            // foreach (Die die in SELECTED DICE LIST):
+                            // remove first HAND LIST die where value == SELECTED LIST dice value)
 
                             // Todo:
-                            // Input string of dice values to set aside
-                                // Convert string into a list of single-digit integers
-                                // Check that the dice-list contains all values in the int-list
-                                    // Add & remove dice corresponding to the int-list...
-                                    // ...from remainingDice to setAsideDice
-                                    // (foreach (nr in int-list) -> remove dice where value == nr)
 
-                                    // Get score from setAsideDice and add to turn score
-                                    // Empty list of set aside dice
+                            // Check that input dice are valid:
+
+                            // X Type a string of dice values to select
+                            // X Convert string into a single-digit INT LIST
+                            // X Check that HAND DICE LIST contains all values in the INT LIST
+                            // X Add the INT LIST dice from HAND DICE LIST to SELECTED DICE LIST
+
+                            // Check that all selected dice score:
+
+                            // X Count score in SELECTED DICE LIST & add to TEMP SCORE
+                            // X Leave non-scoring dice in REMAINING DICE LIST
+                            // X Check that REMAINING DICE LIST is empty
+                            // X Add TEMP SCORE to SCORE
+                            // X Remove SELECTED DICE LIST from HAND DICE LIST
 
                             break;
                         }
 
                     case ConsoleKey.D2:
                         // Add final turn score to actor's core
-                        turn.Score += GetScore(turn.RemainingDice);
+                        turn.Score += GetScore(turn.HandDice, turn);
                         turn.Actor.Score += turn.Score;
 
                         // Print scores
@@ -129,7 +205,7 @@ internal class Farkle
                 Console.WriteLine();
 
                 // Check if all dice scored
-                if (turn.RemainingDice.Count() == 0)
+                if (turn.HandDice.Count() == 0)
                 {
                     Console.WriteLine($"All of {turn.Actor}'s dice scored! " +
                         $"Do they wish to keep playing their turn with new dice?\n" +
@@ -160,19 +236,6 @@ internal class Farkle
         while (turn.IsActive);
     }
 
-    private void PrintStartScreen()
-    {
-        Console.Clear();
-
-        // Title
-        Console.WriteLine("> Dice Thrower > Farkle");
-        Console.WriteLine();
-
-        // List of Players & Opponents
-        Utilities.PrintActors(_players, _opponents);
-        Console.WriteLine();
-    }
-
     // Checks if the given dice have a scoring combination
     private bool CheckIfScore(List<Die> dice)
     {
@@ -198,98 +261,179 @@ internal class Farkle
     }
 
     // Gets the score from the best combination of the given dice
-    private int GetScore(List<Die> dice)
+    private int GetScore(List<Die> dice, FarkleTurnState turn)
     {
-        // Total score for the given dice
+        // Reset remaining dice
+        turn.RemainingDice.Clear();
+        turn.RemainingDice.AddRange(dice);
+
+        // Total score for the given list of dice
         int score = 0;
 
-        // Count numbers of dice with the special values 1 & 5
-        int ones = dice.Where(d => d.Value == 1).Count();
-        int fives = dice.Where(d => d.Value == 5).Count();
-
-        // Count the number of different values among the dice (max 6 for D6's)
-        int distinctDice = dice
+        // Count the number of dice with distinct values
+        int nrOfDistinctDice = dice
             .Select(d => d.Value)
             .Distinct()
             .Count();
 
         // Check for full straight
-        if (distinctDice == 6)
+        if (nrOfDistinctDice == Die.NrOfSides)
         {
-            score += 1500;
-            ones--; // Remove used ones
-            fives--; // Remove used fives
-            Console.WriteLine($"Debug - full straight, score: {score}");
+            int comboScore = 1500;
+            score += comboScore;
+
+            Console.WriteLine($"Full straight: {comboScore} score");
+
+            // Consume scoring dice
+            turn.RemainingDice.Clear();
         }
-        else if (distinctDice == 5)
+        else if (nrOfDistinctDice == (Die.NrOfSides - 1))
         {
             // Check for small straight
-            if (!dice.Any(d => d.Value == 6))
+            if (!dice.Any(d => d.Value == Die.NrOfSides))
             {
-                score += 500;
-                ones--;
-                fives--;
-                Console.WriteLine($"Debug - small straight, score: {score}");
+                int comboScore = 500;
+                score += comboScore;
+
+                Console.WriteLine($"Small straight: {comboScore} score");
+
+                // Consume scoring dice
+                for (int i = 0; i < (Die.NrOfSides - 1); i++)
+                {
+                    int dieValue = i + 1;
+                    int dieIndex = turn.RemainingDice.FindIndex(die => die.Value == dieValue);
+                    turn.RemainingDice.RemoveAt(dieIndex);
+                }
             }
             // Check for large straight
             else if (!dice.Any(d => d.Value == 1))
             {
-                score += 750;
-                fives--;
-                Console.WriteLine($"Debug - large straight, score: {score}");
+                int comboScore = 750;
+                score += comboScore;
+
+                Console.WriteLine($"Large straight: {comboScore} score");
+
+                // Consume scoring dice
+                for (int i = 1; i < Die.NrOfSides; i++)
+                {
+                    int dieValue = i + 1;
+                    int dieIndex = turn.RemainingDice.FindIndex(die => die.Value == dieValue);
+                    turn.RemainingDice.RemoveAt(dieIndex);
+                }
             }
         }
         // Check for matching dice
         else
         {
-            // Create a list of groups of matching dice
-            List<IGrouping<int, Die>> groups = dice
-                .GroupBy(d => d.Value)
-                .ToList();
+            // Create a sequence of groups of matching dice
+            IEnumerable<IGrouping<int, Die>> groups = dice.GroupBy(d => d.Value);
 
-            // For each group of matching dice
             foreach (IGrouping<int, Die> group in groups)
             {
-                int nrOfMatchingDice = group.Count();
-                int diceValue = group.Key;
+                int dieValue = group.Key;
+                int matchingDiceCount = group.Count();
 
-                if (nrOfMatchingDice >= 3)
+                if (matchingDiceCount >= 3)
                 {
-                    // Handle triple ones for special score
-                    if (diceValue == 1)
+                    // Handle special score for 3 ones
+                    if (dieValue == 1)
                     {
-                        int nrOfTripleOnes = nrOfMatchingDice / 3;
-                        int remainingOnes = nrOfMatchingDice % 3;
+                        int tripleOnesCount = matchingDiceCount / 3;
+                        int remainingOnes = matchingDiceCount % 3;
+                        int comboScore = tripleOnesCount * 1000;
 
-                        score += nrOfTripleOnes * 1000;
-                        ones = remainingOnes; // Remove used ones
-                        Console.WriteLine($"Debug - {nrOfTripleOnes} triple ones, score: {score}");
+                        score += comboScore;
+
+                        Console.WriteLine($"{tripleOnesCount}*{dieValue}: {comboScore} score");
+
+                        // Consume scoring dice
+                        for (int i = 0; i < (matchingDiceCount - remainingOnes); i++)
+                        {
+                            int dieIndex = 
+                                turn.RemainingDice.FindIndex(die => die.Value == dieValue);
+                            turn.RemainingDice.RemoveAt(dieIndex);
+                        }
                     }
-                    // Handle other matching dice values
+                    // Handle score for other matching dice values
                     else
                     {
                         // Score multiplier depending on the number of matching dice
-                        int scoreMultiplier = (int)Math.Pow(2, nrOfMatchingDice - 3);
+                        int scoreMultiplier = (int)Math.Pow(2, matchingDiceCount - 3);
 
-                        // Calculate & add score
-                        score += diceValue * 100 * scoreMultiplier;
+                        // Calculate score for the combination
+                        int comboScore = dieValue * 100 * scoreMultiplier;
+
+                        score += comboScore;
+
                         Console.WriteLine(
-                            $"Debug - {nrOfMatchingDice}*{diceValue}, score: {score}");
+                            $"{matchingDiceCount}*{dieValue}: {comboScore} score");
 
-                        // Remove used fives from further score calculation
-                        if (diceValue == 5)
-                        {
-                            fives -= nrOfMatchingDice;
-                        }
+                        // Consume scoring dice
+                        turn.RemainingDice.RemoveAll(die => die.Value == dieValue);
                     }
                 }
             }
         }
 
-        // Add score from remaining ones & fives
-        score += ones * 100 + fives * 50;
-        Console.WriteLine($"Debug - {ones} ones & {fives} fives, score: {score}");
+        // Count remaining ones & fives
+        int ones = turn.RemainingDice.Where(die => die.Value == 1).Count();
+        int fives = turn.RemainingDice.Where(die => die.Value == 5).Count();
+
+        // Calculate score from remaining ones & fives
+        int remainingScore = ones * 100 + fives * 50;
+
+        score += remainingScore;
+
+        Console.WriteLine($"{ones}*1 + {fives}*5: {remainingScore} score");
+
+        // Consume scoring dice
+        turn.RemainingDice.RemoveAll(die => die.Value == 1 || die.Value == 5);
 
         return score;
+    }
+
+    private bool DiceContainsValues(List<Die> dice, List<int> values)
+    {
+        // Create a sequence of groups of matching values
+        IEnumerable<IGrouping<int, int>> valueGroups = values.GroupBy(value => value);
+
+        foreach (IGrouping<int, int> group in valueGroups)
+        {
+            int value = group.Key;
+            int valueCount = group.Count();
+
+            // Number of dice with the requested value
+            int diceCount = dice.Count(die => die.Value == value);
+
+            // Check if there are enough dice with the requested value 
+            if (diceCount < valueCount)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private void PrintStartScreen()
+    {
+        Console.Clear();
+
+        // Title
+        Console.WriteLine("> Dice Thrower > Farkle");
+        Console.WriteLine();
+
+        // List of Players & Opponents
+        Utilities.PrintActors(_players, _opponents);
+        Console.WriteLine();
+    }
+
+    private void PrintDice(List<Die> dice)
+    {
+        foreach (Die die in dice)
+        {
+            Console.Write($"{die.Value} ");
+        }
+        Console.WriteLine();
     }
 }
