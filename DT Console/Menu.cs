@@ -60,7 +60,7 @@ internal class Menu
         Console.WriteLine();
 
         // List of players & opponents
-        Utilities.PrintActors(_players, _opponents);
+        Prints.PrintActors(_players, _opponents);
         Console.WriteLine();
 
         // Options
@@ -92,7 +92,7 @@ internal class Menu
             "...\n" +
             "...\n");
 
-        Utilities.WaitForKeyPress();
+        Prints.WaitForKeyPress();
     }
 
     // Empty the list of players & add new players
@@ -155,7 +155,7 @@ internal class Menu
         if (maxOpponents == 0)
         {
             Console.WriteLine("Max number of players reached. Remove players to add AI opponents.");
-            Utilities.WaitForKeyPress();
+            Prints.WaitForKeyPress();
             return;
         }
 

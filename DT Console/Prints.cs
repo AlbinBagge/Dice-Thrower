@@ -1,12 +1,8 @@
 ﻿// Albin Bagge
 namespace DT_Console;
 
-internal static class Utilities
+internal static class Prints
 {
-    static Utilities() // Todo: no constructor needed?
-    {
-    }
-
     // Pause & prompt the user to press a key
     internal static void WaitForKeyPress()
     {
@@ -28,5 +24,29 @@ internal static class Utilities
         {
             Console.WriteLine($"- {opponent.Name}");
         }
+    }
+
+    internal static void PrintDieInColor(Die die, ConsoleColor backgroundColor)
+    {
+        Console.ForegroundColor = ConsoleColor.Black;
+        Console.BackgroundColor = backgroundColor;
+        Console.Write($" {die.Value} ");
+        Console.ResetColor();
+    }
+
+    internal static void PrintDiceList(List<Die> dice)
+    {
+        foreach (Die die in dice)
+        {
+            PrintDieInColor(die, ConsoleColor.Yellow);
+            Console.Write(" ");
+        }
+    }
+
+    internal static void WriteInColor(string text, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        Console.Write(text);
+        Console.ResetColor();
     }
 }
