@@ -40,7 +40,9 @@ internal class Farkle
                 Actor? winner = _actors.MaxBy(actor => actor.Score);
                 if (winner != null)
                 {
-                    Console.WriteLine($"The winner is {winner.Name} with {winner.Score} score!");
+                    WriteInColor($"The winner is {winner.Name} with {winner.Score} score!\n", 
+                        ConsoleColor.Green);
+                    Console.WriteLine();
                     Utilities.WaitForKeyPress();
                 }
 
@@ -95,7 +97,8 @@ internal class Farkle
                         // Set aside
                         case ConsoleKey.D1:
                             Console.WriteLine(
-                                "SET ASIDE - Input values to set aside, with or without spaces:");
+                                "SET ASIDE - Input values to set aside, with or without spaces, " +
+                                "and press Enter:");
 
                             bool isSettingAside = true;
                             do
@@ -173,13 +176,19 @@ internal class Farkle
 
                         // Stand
                         case ConsoleKey.D2:
+                            // Print choice
+                            Console.WriteLine("STAND");
+
                             // Add final turn score to actor's core
                             turn.Score += GetScore(turn.HandDice, turn);
                             turn.Actor.Score += turn.Score;
 
                             // Print scores
-                            Console.WriteLine($"{turn.Actor.Name} stands. " +
-                                $"Turn score: {turn.Score}, Total score: {turn.Actor.Score}");
+                            Console.Write($"{turn.Actor.Name} stands. (TURN: ");
+                            WriteInColor($"{turn.Score}", ConsoleColor.Yellow);
+                            Console.Write($" score / TOTAL: ");
+                            WriteInColor($"{turn.Actor.Score}", ConsoleColor.Yellow);
+                            Console.WriteLine(" score)");
                             Console.WriteLine();
 
                             // End the turn
@@ -223,7 +232,7 @@ internal class Farkle
             {
                 // Farkle (bust)
                 turn.IsActive = false;
-                Console.WriteLine($"{turn.Actor.Name} farkled! (No scoring dice.)");
+                WriteInColor($"{turn.Actor.Name} farkled! (No score.)\n", ConsoleColor.Red);
                 Console.WriteLine();
             }
         }
@@ -278,8 +287,9 @@ internal class Farkle
 
             // Print scoring dice
             PrintDiceList(turn.RemainingDice);
-            Console.Write($"= {comboScore} score");
-            Console.WriteLine();
+            Console.Write("= ");
+            WriteInColor($"{comboScore}", ConsoleColor.Yellow);
+            Console.Write(" score\n");
 
             // Consume scoring dice
             turn.RemainingDice.Clear();
@@ -297,11 +307,14 @@ internal class Farkle
                 {
                     int dieValue = i + 1;
                     int dieIndex = turn.RemainingDice.FindIndex(die => die.Value == dieValue);
-                    PrintDie(turn.RemainingDice[dieIndex]); // Print die
-                    turn.RemainingDice.RemoveAt(dieIndex); // Consume die
+                    PrintDieInColor(turn.RemainingDice[dieIndex], ConsoleColor.Yellow);
+                    Console.Write(" ");
+                    turn.RemainingDice.RemoveAt(dieIndex);
                 }
-                Console.Write($" = {comboScore} score");
-                Console.WriteLine();
+                Console.Write("= ");
+                WriteInColor($"{comboScore}", ConsoleColor.Yellow);
+                Console.Write(" score\n");
+
             }
             // Check for large straight
             else if (!dice.Any(d => d.Value == 1))
@@ -314,11 +327,13 @@ internal class Farkle
                 {
                     int dieValue = i + 1;
                     int dieIndex = turn.RemainingDice.FindIndex(die => die.Value == dieValue);
-                    PrintDie(turn.RemainingDice[dieIndex]); // Print die
-                    turn.RemainingDice.RemoveAt(dieIndex); // Consume die
+                    PrintDieInColor(turn.RemainingDice[dieIndex], ConsoleColor.Yellow);
+                    Console.Write(" ");
+                    turn.RemainingDice.RemoveAt(dieIndex);
                 }
-                Console.Write($" = {comboScore} score");
-                Console.WriteLine();
+                Console.Write("= ");
+                WriteInColor($"{comboScore}", ConsoleColor.Yellow);
+                Console.Write(" score\n");
             }
         }
         // Check for matching dice
@@ -334,7 +349,7 @@ internal class Farkle
 
                 if (matchingDiceCount >= 3)
                 {
-                    // Handle special score for 3 ones
+                    // Check for three ones (special score)
                     if (dieValue == 1)
                     {
                         int tripleOnesCount = matchingDiceCount / 3;
@@ -344,17 +359,17 @@ internal class Farkle
 
                         score += comboScore;
 
-                        //Console.WriteLine($"{scoringOnes}*{dieValue}: {comboScore} score");
-
                         // Print scoring dice
                         for (int i = 0; i < scoringOnes; i++)
                         {
                             int dieIndex =
                                 turn.RemainingDice.FindIndex(die => die.Value == dieValue);
-                            PrintDie(turn.RemainingDice[dieIndex]);
+                            PrintDieInColor(turn.RemainingDice[dieIndex], ConsoleColor.Yellow);
+                            Console.Write(" ");
                         }
-                        Console.Write($" = {comboScore} score");
-                        Console.WriteLine();
+                        Console.Write("= ");
+                        WriteInColor($"{comboScore}", ConsoleColor.Yellow);
+                        Console.Write(" score\n");
 
                         // Consume scoring dice
                         for (int i = 0; i < scoringOnes; i++)
@@ -364,7 +379,7 @@ internal class Farkle
                             turn.RemainingDice.RemoveAt(dieIndex);
                         }
                     }
-                    // Handle score for other matching dice values
+                    // Check for other matching dice values
                     else
                     {
                         // Score multiplier depending on the number of matching dice
@@ -379,8 +394,9 @@ internal class Farkle
                         List<Die> matchingDice = new();
                         matchingDice.AddRange(turn.RemainingDice.Where(die => die.Value == dieValue));
                         PrintDiceList(matchingDice);
-                        Console.Write($"= {comboScore} score");
-                        Console.WriteLine();
+                        Console.Write("= ");
+                        WriteInColor($"{comboScore}", ConsoleColor.Yellow);
+                        Console.Write(" score\n");
 
                         // Consume scoring dice
                         turn.RemainingDice.RemoveAll(die => die.Value == dieValue);
@@ -407,14 +423,16 @@ internal class Farkle
         if (onesCount > 0)
         {
             PrintDiceList(matchDice);
-            Console.Write($"= {onesScore} score");
-            Console.WriteLine();
+            Console.Write("= ");
+            WriteInColor($"{onesScore}", ConsoleColor.Yellow);
+            Console.Write(" score\n");
         }
         if (fivesCount > 0)
         {
             PrintDiceList(fivesDice);
-            Console.Write($"= {fivesScore} score");
-            Console.WriteLine();
+            Console.Write("= ");
+            WriteInColor($"{fivesScore}", ConsoleColor.Yellow);
+            Console.Write(" score\n");
         }
 
         // Consume scoring dice
@@ -459,33 +477,27 @@ internal class Farkle
         Console.WriteLine();
     }
 
-    private void PrintDie(Die die)
+    private void PrintDieInColor(Die die, ConsoleColor backgroundColor)
     {
-        // Add colors
         Console.ForegroundColor = ConsoleColor.Black;
-        Console.BackgroundColor = ConsoleColor.Yellow;
+        Console.BackgroundColor = backgroundColor;
         Console.Write($" {die.Value} ");
         Console.ResetColor();
     }
-
-    // Remove old method?:
-    /*
-    private void PrintDieValue(int dieValue)
-    {
-        // Add colors
-        Console.ForegroundColor = ConsoleColor.Black;
-        Console.BackgroundColor = ConsoleColor.Yellow;
-        Console.Write($" {dieValue} ");
-        Console.ResetColor();
-    }*/
 
     private void PrintDiceList(List<Die> dice)
     {
         foreach (Die die in dice)
         {
-            //PrintDieValue(die.Value); // Remove?
-            PrintDie(die);
+            PrintDieInColor(die, ConsoleColor.Yellow);
             Console.Write(" ");
         }
+    }
+
+    private void WriteInColor(string text, ConsoleColor color)
+    {
+        Console.ForegroundColor = color;
+        Console.Write(text);
+        Console.ResetColor();
     }
 }
