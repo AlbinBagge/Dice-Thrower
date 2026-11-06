@@ -104,6 +104,10 @@ internal class Menu
         int leftOverOpponents;
         int exceedingOpponents;
 
+        // Print choice
+        Console.WriteLine("CHOOSE PLAYERS");
+        Console.WriteLine();
+
         // Input new number of players
         do
         {
@@ -142,6 +146,10 @@ internal class Menu
         int numberOfOpponents;
         int minOpponents = 0;
         int maxOpponents = _maxActors - numberOfPlayers;
+
+        // Print choice
+        Console.WriteLine("CHOOSE OPPONENTS");
+        Console.WriteLine();
 
         // Check if opponents can be added
         if (maxOpponents == 0)
