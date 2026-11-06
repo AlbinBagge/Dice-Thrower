@@ -10,7 +10,7 @@ internal class Menu
     internal Menu()
     {
         _players.Add(new Player("Player 1"));
-        _opponents.Add(new Opponent(0));
+        _players.Add(new Player("Player 2"));
     }
 
     internal void Start()
@@ -67,9 +67,6 @@ internal class Menu
         Console.WriteLine(
             "Choose an option by pressing a number key:\n" +
             "1. Play Farkle\n" +
-            //"2. Play Put & Take\n" +
-            //"3. Play Nine-Five\n" +
-            //"4. Play Beetle\n" +
             "2. Choose players\n" +
             "3. Choose AI opponents\n" +
             "4. Rules\n" +
@@ -86,11 +83,29 @@ internal class Menu
 
         // Rules text
         Console.WriteLine(
-            "Farkle\n" +
+            "FARKLE\n" +
             "\n" +
-            "...\n" +
-            "...\n" +
-            "...\n");
+            "Try to roll the best scoring combinations.\n" +
+            "\n" +
+            "Combination scores:\n" +
+            "- Full straight  (1-6)    1500\n" +
+            "- Large straight (2-6)     750\n" +
+            "- Small straight (1-5)     500\n" +
+            "- Three ones              1000\n" +
+            "- Single one               100\n" +
+            "- Single five               50\n" +
+            "- Three of a kind         Value * 100\n" +
+            "- Four of a kind          Value * 100 * 2\n" +
+            "- Five of a kind          Value * 100 * 4\n" +
+            "- six of a kind           Value * 100 * 8\n" +
+            "\n" +
+            "After rolling, choose if you want to set aside dice.\n" +
+            "Then keep rolling the remaining dice.\n" +
+            "\n" +
+            "If you at any point don't roll any scoring dice you lose the score from that turn.\n" +
+            "The more dice you set aside, the more risk you take.\n" +
+            "\n" +
+            "The player who first reaches 4000 score wins.\n");
 
         Prints.WaitForKeyPress();
     }
