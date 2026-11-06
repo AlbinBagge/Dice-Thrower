@@ -39,6 +39,10 @@ internal class Menu
                     break;
 
                 case ConsoleKey.D4:
+                    PrintRules();
+                    break;
+
+                case ConsoleKey.D5:
                     menuIsActive = false; // Quit
                     break;
             }
@@ -68,7 +72,27 @@ internal class Menu
             //"4. Play Beetle\n" +
             "2. Choose players\n" +
             "3. Choose AI opponents\n" +
-            "4. Quit\n");
+            "4. Rules\n" +
+            "5. Quit\n");
+    }
+
+    private void PrintRules()
+    {
+        Console.Clear();
+
+        // Title
+        Console.WriteLine("> Dice Thrower > Rules");
+        Console.WriteLine();
+
+        // Rules text
+        Console.WriteLine(
+            "Farkle\n" +
+            "\n" +
+            "...\n" +
+            "...\n" +
+            "...\n");
+
+        Utilities.WaitForKeyPress();
     }
 
     // Empty the list of players & add new players
