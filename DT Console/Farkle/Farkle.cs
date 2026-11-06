@@ -36,15 +36,7 @@ internal class Farkle
             // Win condition
             if (_actors.Any(a => a.Score >= WinScore))
             {
-                // Print winner
-                Actor? winner = _actors.MaxBy(actor => actor.Score);
-                if (winner != null)
-                {
-                    WriteInColor($"The winner is {winner.Name} with {winner.Score} score!\n", 
-                        ConsoleColor.Green);
-                    Console.WriteLine();
-                    Utilities.WaitForKeyPress();
-                }
+                PrintWinner();
 
                 // Reset scores
                 foreach (Actor actor in _actors)
@@ -64,63 +56,26 @@ internal class Farkle
         // Handle information needed for the turn
         FarkleTurnState turn = new(actor);
 
-        // Turn loop
         do
         {
             RollAndPrintHand(turn);
 
-            // Check if the turn should continue
-            if (CheckIfScore(turn.HandDice))
+            if (HasScore(turn.HandDice))
             {
-                SetAsideOrStand(turn);
+                ChooseSetAsideOrStand(turn);
 
-                // Check if all dice scored (without printing dice)
+                // Update the number of non-scoring dice remaining in the hand
                 GetScore(turn.HandDice, turn, false);
+
+                // Check if all dice in the hand scored
                 if (turn.RemainingDice.Count() == 0)
                 {
-                    WriteInColor($"All of {turn.Actor.Name}'s dice scored!\n", ConsoleColor.Green);
-                    Console.WriteLine(
-                        $"Do they wish to keep playing their turn with new dice?\n" +
-                        $"1. Yes\n" +
-                        $"2. No");
-
-                    bool menuIsActive = true;
-                    do
-                    {
-                        // Choose: add dice / end turn
-                        switch (Console.ReadKey(true).Key)
-                        {
-                            case ConsoleKey.D1:
-                                // Print choice
-                                Console.WriteLine("YES");
-                                Console.WriteLine();
-
-                                // Resume the turn & reset dice
-                                turn.IsActive = true;
-                                turn.HandDice.Clear();
-                                turn.AddDice();
-
-                                menuIsActive = false;
-                                break;
-
-                            case ConsoleKey.D2:
-                                // Print choice
-                                Console.WriteLine("NO");
-                                Console.WriteLine();
-
-                                // End the turn
-                                turn.IsActive = false;
-
-                                menuIsActive = false;
-                                break;
-                        }
-                    }
-                    while (menuIsActive);
+                    ChooseContinueOrEndTurn(turn);
                 }
             }
             else
             {
-                // Farkle (bust)
+                // Farkle (end turn without score)
                 turn.IsActive = false;
                 WriteInColor($"{turn.Actor.Name} farkled! (No score.)\n", ConsoleColor.Red);
                 Console.WriteLine();
@@ -130,7 +85,7 @@ internal class Farkle
     }
 
     // Checks if the given dice have a scoring combination
-    private bool CheckIfScore(List<Die> dice)
+    private bool HasScore(List<Die> dice)
     {
         bool rollScored = false;
 
@@ -441,7 +396,7 @@ internal class Farkle
         Console.WriteLine();
     }
 
-    private void SetAsideOrStand(FarkleTurnState turn)
+    private void ChooseSetAsideOrStand(FarkleTurnState turn)
     {
         Console.WriteLine(
                     $"1. Set aside\n" +
@@ -454,107 +409,174 @@ internal class Farkle
             switch (Console.ReadKey(true).Key)
             {
                 case ConsoleKey.D1:
+                    SetAsideDice(turn);
+                    menuIsActive = false;
+                    break;
+
+                case ConsoleKey.D2:
+                    Stand(turn);
+                    menuIsActive = false;
+                    break;
+            }
+        }
+        while (menuIsActive);
+    }
+
+    private void ChooseContinueOrEndTurn(FarkleTurnState turn)
+    {
+        WriteInColor($"All of {turn.Actor.Name}'s dice scored!\n", ConsoleColor.Green);
+        Console.WriteLine(
+            $"Do they wish to continue playing their turn with new dice?\n" +
+            $"1. Yes\n" +
+            $"2. No");
+
+        bool menuIsActive = true;
+        do
+        {
+            // Choose: continue turn / end turn
+            switch (Console.ReadKey(true).Key)
+            {
+                case ConsoleKey.D1:
                     // Print choice
-                    Console.WriteLine(
-                        "SET ASIDE - Input values to set aside, with or without spaces, " +
-                        "and press Enter:");
+                    Console.WriteLine("YES");
+                    Console.WriteLine();
 
-                    bool isSettingAside = true;
-                    do
-                    {
-                        // Reset selected dice & their score
-                        turn.SelectedDice.Clear();
-                        turn.TempScore = 0;
+                    // Continue the turn
+                    turn.IsActive = true;
 
-                        // Input string for dice selection
-                        string valuesText;
-                        do
-                        {
-                            valuesText = Console.ReadLine() ?? string.Empty;
-                        }
-                        while (string.IsNullOrWhiteSpace(valuesText));
-
-                        // Convert digits in the string to a list of integers
-                        List<int> valuesList = valuesText
-                            .Where(char.IsDigit)
-                            .Select(character => character - '0')
-                            .ToList();
-
-                        // Make sure the list of requested values isn't empty
-                        if (valuesList.Count == 0)
-                        {
-                            continue;
-                        }
-
-                        // Make sure the hand contains all requested values
-                        if (!DiceContainsValues(turn.HandDice, valuesList))
-                        {
-                            continue;
-                        }
-
-                        // Add requested dice from the hand to selected dice
-                        foreach (int value in valuesList)
-                        {
-                            int index = turn.HandDice.FindIndex(die => die.Value == value);
-                            turn.SelectedDice.Add(turn.HandDice[index]);
-                        }
-
-                        // Obtain the score from selected dice
-                        turn.TempScore = GetScore(turn.SelectedDice, turn, true);
-
-                        // Check if there are non-scoring dice remaining from selected dice
-                        // (Non-scoring dice can not be set aside)
-                        if (turn.RemainingDice.Count() != 0)
-                        {
-                            continue;
-                        }
-
-                        // Empty line after successfull input
-                        Console.WriteLine();
-
-                        // Add score from dice selected to be set aside
-                        turn.Score += turn.TempScore;
-
-                        // Set aside selected dice
-                        foreach (Die selectedDie in turn.SelectedDice)
-                        {
-                            // Find the index of a die with corresponding value
-                            int index = turn.HandDice.FindIndex(
-                                handDie => handDie.Value == selectedDie.Value);
-
-                            // Remove the corresponding die from the hand
-                            turn.HandDice.RemoveAt(index);
-                        }
-
-                        isSettingAside = false;
-                    }
-                    while (isSettingAside);
+                    // Reset dice
+                    turn.HandDice.Clear();
+                    turn.AddDice();
 
                     menuIsActive = false;
                     break;
 
                 case ConsoleKey.D2:
                     // Print choice
-                    Console.WriteLine("STAND");
-
-                    // Add final turn score to actor's core
-                    turn.Score += GetScore(turn.HandDice, turn, true);
-                    turn.Actor.Score += turn.Score;
-
-                    // Print scores
-                    Console.Write($"{turn.Actor.Name} stands. (TURN: ");
-                    WriteInColor($"{turn.Score}", ConsoleColor.Yellow);
-                    Console.Write($" score / TOTAL: ");
-                    WriteInColor($"{turn.Actor.Score}", ConsoleColor.Yellow);
-                    Console.WriteLine(" score)");
+                    Console.WriteLine("NO");
                     Console.WriteLine();
 
                     // End the turn
                     turn.IsActive = false;
+
                     menuIsActive = false;
                     break;
             }
         }
         while (menuIsActive);
+    }
+
+    private void SetAsideDice(FarkleTurnState turn)
+    {
+        // Print choice
+        Console.WriteLine(
+            "SET ASIDE - Input values to set aside, with or without spaces, " +
+            "and press Enter:");
+
+        bool isSettingAside = true;
+        do
+        {
+            // Reset selected dice & their score
+            turn.SelectedDice.Clear();
+            turn.TempScore = 0;
+
+            // Input string for dice selection
+            string valuesText;
+            do
+            {
+                valuesText = Console.ReadLine() ?? string.Empty;
+            }
+            while (string.IsNullOrWhiteSpace(valuesText));
+
+            // Convert digits in the string to a list of integers
+            List<int> valuesList = valuesText
+                .Where(char.IsDigit)
+                .Select(character => character - '0')
+                .ToList();
+
+            // Make sure the list of requested values isn't empty
+            if (valuesList.Count == 0)
+            {
+                continue;
+            }
+
+            // Make sure the hand contains all requested values
+            if (!DiceContainsValues(turn.HandDice, valuesList))
+            {
+                continue;
+            }
+
+            // Add requested dice from the hand to selected dice
+            foreach (int value in valuesList)
+            {
+                int index = turn.HandDice.FindIndex(die => die.Value == value);
+                turn.SelectedDice.Add(turn.HandDice[index]);
+            }
+
+            // Obtain the score from selected dice
+            turn.TempScore = GetScore(turn.SelectedDice, turn, true);
+
+            // Check if there are non-scoring dice remaining from selected dice
+            // (Non-scoring dice can not be set aside)
+            if (turn.RemainingDice.Count() != 0)
+            {
+                continue;
+            }
+
+            // Empty line after successfull input
+            Console.WriteLine();
+
+            // Add score from dice selected to be set aside
+            turn.Score += turn.TempScore;
+
+            // Set aside selected dice
+            foreach (Die selectedDie in turn.SelectedDice)
+            {
+                // Find the index of a die with corresponding value
+                int index = turn.HandDice.FindIndex(
+                    handDie => handDie.Value == selectedDie.Value);
+
+                // Remove the corresponding die from the hand
+                turn.HandDice.RemoveAt(index);
+            }
+
+            isSettingAside = false;
+        }
+        while (isSettingAside);
+    }
+
+    private void Stand(FarkleTurnState turn)
+    {
+        // Print choice
+        Console.WriteLine("STAND");
+
+        // Add final turn score to actor's core
+        turn.Score += GetScore(turn.HandDice, turn, true);
+        turn.Actor.Score += turn.Score;
+
+        // Print scores
+        Console.Write($"{turn.Actor.Name} stands. (TURN: ");
+        WriteInColor($"{turn.Score}", ConsoleColor.Yellow);
+        Console.Write($" score / TOTAL: ");
+        WriteInColor($"{turn.Actor.Score}", ConsoleColor.Yellow);
+        Console.WriteLine(" score)");
+        Console.WriteLine();
+
+        // End the turn
+        turn.IsActive = false;
+    }
+
+    private void PrintWinner()
+    {
+        // Get actor with the highest score (account for null value)
+        Actor? winner = _actors.MaxBy(actor => actor.Score);
+
+        if (winner != null)
+        {
+            WriteInColor($"The winner is {winner.Name} with {winner.Score} score!\n",
+                ConsoleColor.Green);
+            Console.WriteLine();
+            Utilities.WaitForKeyPress();
+        }
     }
 }
