@@ -22,7 +22,7 @@ internal class Menu
         {
             PrintMenu();
 
-            // Choose: a game / a setting / quit
+            // Choose: a game / a setting / rules / quit
             switch (Console.ReadKey(true).Key)
             {
                 case ConsoleKey.D1:

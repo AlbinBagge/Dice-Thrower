@@ -50,7 +50,7 @@ internal class FarkleRules
         return true;
     }
 
-    // Gets the score from the best combination of the given dice
+    // Add score from the best combinations of the given dice
     internal int ScoreDice(FarkleTurnState turn, List<Die> dice, bool printEnabled)
     {
         // Restore remaining dice
@@ -93,6 +93,7 @@ internal class FarkleRules
         return score;
     }
 
+    // Print score, consume used dice & return score
     private int ScoreFullStraight(FarkleTurnState turn, bool printEnabled)
     {
         int comboScore = 1500;
@@ -112,6 +113,7 @@ internal class FarkleRules
         return comboScore;
     }
 
+    // Print score, consume used dice & return score
     private int ScoreSmallStraight(FarkleTurnState turn, bool printEnabled)
     {
         int comboScore = 500;
@@ -142,6 +144,7 @@ internal class FarkleRules
         return comboScore;
     }
 
+    // Print score, consume used dice & return score
     private int ScoreLargeStraight(FarkleTurnState turn, bool printEnabled)
     {
         int comboScore = 750;
@@ -172,6 +175,7 @@ internal class FarkleRules
         return comboScore;
     }
 
+    // Calculate score, print score & consume used dice
     private int ScoreMatchingDice(FarkleTurnState turn, List<Die> dice, bool printEnabled)
     {
         int score = 0;
@@ -222,6 +226,7 @@ internal class FarkleRules
         return score;
     }
 
+    // Calculate score, print score & consume used dice
     private int ScoreThreeOnes(FarkleTurnState turn, bool printEnabled, int onesCount)
     {
         int tripleOnesCount = onesCount / 3;
@@ -254,6 +259,7 @@ internal class FarkleRules
         return comboScore;
     }
 
+    // Calculate score, print score & consume used dice
     private int ScoreOnesAndFives(FarkleTurnState turn, bool printEnabled)
     {
         // Count number of remaining ones & fives
