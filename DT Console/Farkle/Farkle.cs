@@ -186,7 +186,7 @@ internal class Farkle
     {
         // Print choice
         Console.WriteLine(
-            "SET ASIDE - Input values to set aside, with or without spaces, " +
+            "SET ASIDE - Input the values to set aside, with or without spaces, " +
             "and press Enter:");
 
         bool isSettingAside = true;

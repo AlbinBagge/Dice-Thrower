@@ -85,7 +85,7 @@ internal class Menu
         Console.WriteLine(
             "FARKLE\n" +
             "\n" +
-            "Try to roll the best scoring combinations.\n" +
+            "You start each turn with 6 dice. Try to roll the best scoring combinations.\n" +
             "\n" +
             "Combination scores:\n" +
             "- Full straight  (1-6)    1500\n" +
@@ -97,13 +97,15 @@ internal class Menu
             "- Three of a kind         Value * 100\n" +
             "- Four of a kind          Value * 100 * 2\n" +
             "- Five of a kind          Value * 100 * 4\n" +
-            "- six of a kind           Value * 100 * 8\n" +
+            "- Six of a kind           Value * 100 * 8\n" +
             "\n" +
-            "After rolling, choose if you want to set aside dice.\n" +
-            "Then keep rolling the remaining dice.\n" +
+            "After rolling, choose if you want to set aside any scoring dice.\n" +
+            "Setting aside dice allows you to roll the remaining dice again for a new combination.\n" +
             "\n" +
-            "If you at any point don't roll any scoring dice you lose the score from that turn.\n" +
-            "The more dice you set aside, the more risk you take.\n" +
+            "If any roll lacks scoring dice you lose all score from that turn.\n" +
+            "In other words, the more dice you set aside, the more risk you take.\n" +
+            "\n" +
+            "When you stand, the score from each roll that turn is saved.\n" +
             "\n" +
             "The player who first reaches 4000 score wins.\n");
 
@@ -126,7 +128,7 @@ internal class Menu
         // Input new number of players
         do
         {
-            numberOfPlayers = InputNumber($"Input number of players (1-{_maxActors}): ");
+            numberOfPlayers = InputNumber($"Type the number of players (1-{_maxActors}) and press Enter: ");
         }
         while (numberOfPlayers < 1 || numberOfPlayers > _maxActors);
 
@@ -136,7 +138,7 @@ internal class Menu
         // Add new players to the list
         for (int i = 0; i < numberOfPlayers; i++)
         {
-            playerName = InputName($"Enter a unique name for Player {i + 1}: ");
+            playerName = InputName($"Type a unique name for Player {i + 1} and press Enter: ");
             _players.Add(new Player(playerName));
         }
 
@@ -184,7 +186,7 @@ internal class Menu
         do
         {
             numberOfOpponents = InputNumber(
-                $"Input number of opponents ({minOpponents}-{maxOpponents}): ");
+                $"Type the number of opponents ({minOpponents}-{maxOpponents}) and press Enter: ");
         }
         while (numberOfOpponents < minOpponents || numberOfOpponents > maxOpponents);
 
